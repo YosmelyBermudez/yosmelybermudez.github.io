@@ -373,7 +373,9 @@ function getBlocks(i){
     const sc=p.status==='production'?'stprod':p.status==='beta'?'stbeta':'';
     const sy=p.status==='production'?'●':'◐';
     const sl=p.status==='production'?'Production':p.status==='beta'?'Beta':(p.status||'');
-    const vid=p.media_url?`<video autoplay loop muted playsinline style="width:100%;border-radius:2px;margin:.38rem 0;max-height:120px;object-fit:cover"><source src="${p.media_url}" type="video/mp4"></video>`:'';
+    const isGif=p.media_url&&/\.gif(\?|$)/i.test(p.media_url);
+    const vid=p.media_url?(isGif?`<img src="${p.media_url}" alt="" style="width:100%;border-radius:2px;margin:.38rem 0;max-height:120px;object-fit:cover;display:block">`:`<video autoplay loop muted playsinline style="width:100%;border-radius:2px;margin:.38rem 0;max-height:120px;object-fit:cover"><source src="${p.media_url}"></video>`):'';
+
     return `<div class="prj ani"><div class="prj-ico">${p.emoji||'🤖'}</div><div><div class="prj-n">${p.title}</div><div class="prj-d">${p.description||''}</div>${vid}<div class="prj-s ${sc}">${sy} ${sl}</div><div class="tags" style="margin-top:.38rem">${tags}</div></div></div>`;
   });
   // ── Dynamic: Skills ──
@@ -496,6 +498,8 @@ let sb=null;
     if(skr.data?.length) sbSkills=skr.data;
     if(pubr.data?.length) sbPublications=pubr.data;
     if(abr.data?.length) abr.data.forEach(r=>sbAbout[r.key]=r.value);
+    // Si una sección ya está abierta, la re-renderiza con los datos frescos
+    if(panelOpen && cur > 0) openSection(cur);
   }catch(e){console.warn('Supabase:',e);}
 })();
 
@@ -613,7 +617,7 @@ async function admLoadProjects(){
         <input class="prj-ei" data-f="tags" value="${esc((p.tags||[]).join(', '))}" placeholder="tag1, tag2" style="flex:1">
         <input class="prj-ei" data-f="sort_order" value="${p.sort_order||0}" placeholder="orden" style="width:52px;text-align:center">
       </div>
-      <input class="prj-ei" data-f="media_url" value="${esc(p.media_url||'')}" placeholder="URL video (Supabase Storage)" style="width:100%;margin-top:.28rem">
+      <input class="prj-ei" data-f="media_url" value="${esc(p.media_url||'')}" placeholder="URL del GIF o video (MP4)" style="width:100%;margin-top:.28rem">
       <label class="adm-vis"><input type="checkbox" ${p.visible?'checked':''} onchange="window.toggleVis(this)"> Visible en portfolio</label>
     </div>`).join(''))+`<button class="adb adb-c adb-w" onclick="window.addPrj()">+ Agregar Proyecto</button>`;
 }
