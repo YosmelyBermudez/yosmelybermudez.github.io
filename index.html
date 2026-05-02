@@ -373,8 +373,7 @@ function getBlocks(i){
     const sc=p.status==='production'?'stprod':p.status==='beta'?'stbeta':'';
     const sy=p.status==='production'?'●':'◐';
     const sl=p.status==='production'?'Production':p.status==='beta'?'Beta':(p.status||'');
-    const isGif=p.media_url&&/\.gif(\?|$)/i.test(p.media_url);
-    const vid=p.media_url?(isGif?`<img src="${p.media_url}" alt="" style="width:100%;border-radius:2px;margin:.38rem 0;max-height:120px;object-fit:cover;display:block">`:`<video autoplay loop muted playsinline style="width:100%;border-radius:2px;margin:.38rem 0;max-height:120px;object-fit:cover"><source src="${p.media_url}"></video>`):'';
+    const vid=p.media_url?`<video autoplay loop muted playsinline style="width:100%;height:110px;border-radius:2px;margin:.38rem 0;object-fit:cover;display:block"><source src="${p.media_url}"></video>`:'';
 
     return `<div class="prj ani"><div class="prj-ico">${p.emoji||'🤖'}</div><div><div class="prj-n">${p.title}</div><div class="prj-d">${p.description||''}</div>${vid}<div class="prj-s ${sc}">${sy} ${sl}</div><div class="tags" style="margin-top:.38rem">${tags}</div></div></div>`;
   });
