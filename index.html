@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yosmely Bermúdez | AI & ML Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --cy:#4DD0E1;--og:#FF6B35;--yl:#FFB700;
+  --wm:#FFF4C8;--du:#D7CCC8;--br:#8D6E63;
+  --dark:#060200;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--dark);font-family:'JetBrains Mono',monospace;cursor:none}
+
+#cur  {position:fixed;width:8px;height:8px;background:var(--cy);border-radius:50%;pointer-events:none;z-index:9999;mix-blend-mode:screen;transform:translate(-50%,-50%)}
+#cur-r{position:fixed;width:26px;height:26px;border:1px solid rgba(77,208,225,.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%)}
+
+/* ── LAYER 1: LIBRARY — no will-change so blend mode works across layers ── */
+#lib{
+  position:fixed;inset:-10%;
+  background:url('./library-bg.jpg') center 40%/cover no-repeat;
+  z-index:0;
+}
+
+/* ── LAYER 2: ATMOSPHERIC ── */
+#vig {position:fixed;inset:0;background:radial-gradient(ellipse 95% 90% at 50% 45%,transparent 15%,rgba(4,1,0,.62) 100%);z-index:1;pointer-events:none}
+#tint{position:fixed;inset:0;background:rgba(4,1,0,0);transition:background 1.4s ease;z-index:1;pointer-events:none}
+#btm {position:fixed;bottom:0;left:0;right:0;height:65%;background:linear-gradient(to top,rgba(4,1,0,.96) 0%,rgba(4,1,0,.5) 50%,transparent 100%);z-index:1;pointer-events:none;opacity:0;transition:opacity 1.2s ease}
+#btm.on{opacity:1}
+/* Dark oval behind astronaut to improve contrast against bright center */
+#csh{
+  position:fixed;left:50%;top:46%;
+  width:min(78vh,72vw);height:min(88vh,80vw);
+  transform:translate(-50%,-50%);
+  background:radial-gradient(ellipse 48% 58% at 50% 46%, rgba(4,1,0,.55) 0%, rgba(4,1,0,.18) 55%, transparent 72%);
+  z-index:2;pointer-events:none;
+}
+
+/* ── LAYER 3: DUST ── */
+#dust{position:fixed;inset:0;z-index:3;pointer-events:none;overflow:hidden}
+.dp{position:absolute;border-radius:50%;animation:drift linear infinite}
+@keyframes drift{0%{transform:translate(0,0);opacity:0}8%{opacity:.7}92%{opacity:.25}100%{transform:translate(var(--dx),var(--dy));opacity:0}}
+
+/* ── LAYER 4: ASTRONAUT GLOW (below astronaut) ── */
+#ag{
+  position:fixed;left:50%;top:46%;
+  width:min(58vh,54vw);height:min(72vh,66vw);
+  transform:translate(-50%,-50%);
+  z-index:4;pointer-events:none;
+  background:radial-gradient(ellipse 46% 56% at 50% 44%, rgba(77,208,225,.16) 0%, rgba(255,120,50,.05) 42%, transparent 68%);
+  border-radius:50%;
+  mix-blend-mode:screen;
+}
+
+/* ── LAYER 5: ASTRONAUT ──
+   KEY: mix-blend-mode:screen is on the WRAPPER (not on the img).
+   The wrapper creates a stacking context that screen-blends against
+   the parent (which has the library). Black bg of the jpg → transparent.
+   No will-change here so the stacking context isn't GPU-isolated.       ── */
+#ast-wrap{
+  position:fixed;left:50%;top:46%;
+  width:min(72vh,64vw);
+  aspect-ratio:1/1;
+  transform:translate(-50%,-50%);
+  z-index:5;pointer-events:none;
+  mix-blend-mode:screen;
+  transition:opacity .9s ease;
+}
+#ast-wrap img{
+  width:100%;height:100%;display:block;
+  /* Boost contrast so black bg gets more black → better transparency.
+     Also boosts suit and LEDs so they're clearly visible after screen blend. */
+  filter:contrast(2.2) brightness(1.18) saturate(1.25);
+}
+
+/* ── LAYER 6: BOKEH (warm Edison bulbs) ── */
+#bk{position:fixed;inset:0;z-index:6;pointer-events:none}
+.bkel{position:absolute;border-radius:50%;animation:bkP ease-in-out infinite alternate}
+@keyframes bkP{0%{opacity:.65;transform:translate(-50%,-50%) scale(1)}100%{opacity:1;transform:translate(-50%,-50%) scale(1.2)}}
+
+/* ── LAYER 7: LIGHT RAYS ── */
+#rays{position:fixed;inset:0;z-index:7;pointer-events:none;overflow:hidden}
+.ray{position:absolute;top:0;width:1px;background:linear-gradient(to bottom,transparent,rgba(255,228,130,.06) 35%,rgba(255,220,100,.04) 65%,transparent);transform-origin:top center;animation:rS ease-in-out infinite alternate}
+@keyframes rS{0%{opacity:.35;transform:rotate(-2.5deg) scaleX(1)}100%{opacity:.85;transform:rotate(2.5deg) scaleX(3.5)}}
+
+/* ── LOADER ── */
+#ld{position:fixed;inset:0;background:#060200;z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;transition:opacity 1.5s ease}
+#ld.out{opacity:0;pointer-events:none}
+.ld-m{font-family:'Cormorant Garamond',serif;font-size:5rem;font-weight:300;color:var(--wm);letter-spacing:-.04em;opacity:.13}
+.ld-m em{font-style:italic;color:var(--cy);opacity:1}
+.ld-b{width:min(240px,60vw);height:1px;background:rgba(255,255,255,.07);position:relative;overflow:hidden}
+.ld-f{position:absolute;inset-block:0;left:0;width:0;background:linear-gradient(90deg,var(--og),var(--cy));transition:width .2s ease;box-shadow:0 0 14px var(--cy)}
+.ld-t{font-size:.6rem;color:var(--br);letter-spacing:.35em;text-transform:uppercase}
+
+#prog{position:fixed;top:0;left:0;height:1px;background:linear-gradient(90deg,var(--og),var(--cy));z-index:80;width:0%;transition:width .7s ease;box-shadow:0 0 6px var(--cy)}
+
+/* ── NAV DOTS ── */
+#nav{position:fixed;right:1.6rem;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:.85rem;z-index:50}
+.dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.18);cursor:pointer;transition:all .3s;position:relative}
+.dot::after{content:attr(data-l);position:absolute;right:1.4rem;top:50%;transform:translateY(-50%);font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--du);white-space:nowrap;opacity:0;transition:opacity .3s}
+.dot:hover::after,.dot.on::after{opacity:1}
+.dot.on{background:var(--cy);box-shadow:0 0 10px var(--cy)}
+
+/* ── HERO ── */
+#hero{position:fixed;bottom:0;left:0;right:0;padding:clamp(1.5rem,4vw,3rem) clamp(2rem,5vw,4.5rem);z-index:20;opacity:0;transform:translateY(16px);transition:opacity .9s ease,transform .9s ease;pointer-events:none}
+#hero::before{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(4,1,0,.78) 0%,rgba(4,1,0,.38) 55%,transparent 100%);pointer-events:none;z-index:-1}
+#hero.vis{opacity:1;transform:translateY(0);pointer-events:all}
+.h-name{font-family:'Cormorant Garamond',serif;font-size:clamp(3rem,9vw,7.5rem);font-weight:300;color:var(--wm);line-height:.88;letter-spacing:-.02em;text-shadow:0 2px 24px rgba(4,1,0,.7)}
+.h-name em{font-style:italic;color:var(--cy)}
+.h-role{font-size:clamp(.6rem,1.2vw,.8rem);color:var(--cy);letter-spacing:.5em;text-transform:uppercase;margin:.7rem 0 .9rem;text-shadow:0 0 18px rgba(77,208,225,.5)}
+.h-tag{font-family:'Cormorant Garamond',serif;font-size:clamp(.9rem,1.4vw,1.1rem);color:rgba(222,204,176,.92);font-style:italic;max-width:500px;line-height:1.85;text-shadow:0 1px 14px rgba(4,1,0,.95),0 2px 6px rgba(4,1,0,.8)}
+.sh{margin-top:1.9rem;font-size:.56rem;color:rgba(255,244,200,.6);letter-spacing:.35em;text-transform:uppercase;display:flex;align-items:center;gap:.5rem;animation:sPulse 2.5s ease-in-out infinite;text-shadow:0 1px 8px rgba(4,1,0,.9)}
+.sh::before{content:'';display:inline-block;width:14px;height:1px;background:rgba(255,244,200,.4)}
+@keyframes sPulse{0%,100%{opacity:.45}50%{opacity:1}}
+
+/* ── SECTION PANEL ── */
+#panel{position:fixed;bottom:0;left:0;right:0;z-index:40;height:0;overflow:hidden;transition:height .72s cubic-bezier(.4,0,.2,1)}
+#panel.open{height:60vh}
+#pi{position:absolute;bottom:0;left:0;right:0;height:60vh;display:flex;background:linear-gradient(170deg,rgba(8,3,1,.88) 0%,rgba(4,1,0,.97) 100%);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border-top:1px solid rgba(255,107,53,.18);box-shadow:0 -30px 80px rgba(0,0,0,.6)}
+#pl{width:clamp(100px,16vw,200px);flex-shrink:0;border-right:1px solid rgba(255,255,255,.05);padding:clamp(1.4rem,3vw,2.4rem) clamp(1rem,2vw,1.6rem);display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+#pl-num{font-family:'Cormorant Garamond',serif;font-size:clamp(4.5rem,10vw,7.5rem);font-weight:300;line-height:1;letter-spacing:-.04em;color:rgba(255,107,53,.1);position:absolute;bottom:.8rem;right:.3rem}
+#pl-lbl{font-size:.54rem;letter-spacing:.4em;text-transform:uppercase;color:var(--og);margin-bottom:.4rem}
+#pl-tit{font-family:'Cormorant Garamond',serif;font-size:clamp(1rem,2vw,1.5rem);font-weight:300;color:var(--wm);line-height:1.12}
+#pr{flex:1;padding:clamp(1.2rem,2.5vw,2rem) clamp(1.5rem,3vw,2.8rem);overflow-y:auto}
+#pr::-webkit-scrollbar{width:2px}
+#pr::-webkit-scrollbar-thumb{background:rgba(255,107,53,.25);border-radius:2px}
+.ani{opacity:0;transform:translateY(20px);transition:opacity .55s ease,transform .55s ease}
+.ani.in{opacity:1;transform:translateY(0)}
+
+/* Content styles */
+.s-body{font-family:'Cormorant Garamond',serif;font-size:clamp(.95rem,1.5vw,1.1rem);color:#BCA890;line-height:1.85;font-style:italic;max-width:680px}
+.s-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.55rem;margin-top:.5rem}
+.s-stat{padding:.75rem 1rem;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.025);text-align:center}
+.s-stat-n{font-size:1.6rem;font-weight:300;color:var(--cy);font-family:'Cormorant Garamond',serif;line-height:1}
+.s-stat-l{font-size:.53rem;color:var(--br);letter-spacing:.18em;text-transform:uppercase;margin-top:.25rem}
+.exp{padding:.9rem 1.1rem;border-left:2px solid var(--og);background:rgba(255,107,53,.04);margin-bottom:.55rem}
+.exp-t{font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--wm);font-weight:400}
+.exp-c{font-size:.57rem;color:var(--og);letter-spacing:.22em;text-transform:uppercase;margin:.25rem 0 .1rem}
+.exp-d{font-size:.55rem;color:var(--br);margin-bottom:.55rem}
+.tags{display:flex;flex-wrap:wrap;gap:.28rem}
+.tag{font-size:.54rem;padding:.12rem .4rem;background:rgba(77,208,225,.06);border:1px solid rgba(77,208,225,.22);color:#4A94B0;letter-spacing:.05em}
+.prj{display:flex;gap:.9rem;align-items:flex-start;padding:.85rem 1rem;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);margin-bottom:.45rem}
+.prj-ico{font-size:1.3rem;flex-shrink:0;margin-top:.08rem}
+.prj-n{font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--wm);margin-bottom:.25rem}
+.prj-d{font-size:.62rem;color:#8A7A68;line-height:1.55;margin-bottom:.35rem}
+.prj-s{font-size:.53rem;letter-spacing:.18em;text-transform:uppercase}
+.stprod{color:#3AB26A}.stbeta{color:#B2A03A}
+.sk-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem 2rem}
+.sk-cat{border-top:1px solid rgba(255,107,53,.2);padding-top:.6rem}
+.sk-cat-n{font-size:.54rem;letter-spacing:.32em;text-transform:uppercase;color:var(--og);margin-bottom:.7rem}
+.sk-item{margin-bottom:.6rem}
+.sk-row{display:flex;justify-content:space-between;margin-bottom:.24rem}
+.sk-nm{font-size:.62rem;color:var(--du)}
+.sk-pc{font-size:.62rem;color:var(--cy)}
+.sk-bar{height:2px;background:rgba(255,255,255,.07)}
+.sk-f{height:100%;background:linear-gradient(90deg,var(--og),var(--cy));width:0;transition:width 1.5s cubic-bezier(.25,.46,.45,.94)}
+.res{padding:.7rem 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.res-t{font-family:'Cormorant Garamond',serif;font-size:.95rem;color:var(--wm);font-style:italic;margin-bottom:.22rem}
+.res-m{font-size:.57rem;color:var(--br);letter-spacing:.12em}
+.cta{font-family:'Cormorant Garamond',serif;font-size:clamp(1.1rem,2vw,1.5rem);color:var(--wm);line-height:1.35;margin-bottom:.9rem;font-style:italic}
+.c-links{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.clink{display:flex;align-items:center;gap:.7rem;padding:.75rem 1rem;border:1px solid rgba(255,255,255,.07);text-decoration:none;transition:all .25s;color:var(--du)}
+.clink:hover{border-color:rgba(77,208,225,.35);background:rgba(77,208,225,.05);color:var(--cy)}
+.clink-ico{font-size:1rem;flex-shrink:0}
+.clink-l{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase}
+.clink-s{font-size:.52rem;color:var(--br);margin-top:.12rem}
+.avail{font-size:.55rem;letter-spacing:.22em;text-transform:uppercase;color:var(--br);margin-top:.9rem;text-align:center;padding:.55rem;border:1px solid rgba(255,255,255,.05)}
+
+/* ── ADMIN ── */
+#adm{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(540px,92vw);background:rgba(13,27,42,.97);border:1px solid var(--cy);z-index:500;display:none;box-shadow:0 0 50px rgba(77,208,225,.2)}
+#adm.open{display:block}
+.ah{background:rgba(77,208,225,.07);padding:.7rem 1.2rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(77,208,225,.18)}
+.aht{color:var(--cy);font-size:.66rem;letter-spacing:.3em;text-transform:uppercase}
+.axb{color:var(--og);cursor:pointer;font-size:1.1rem}
+.ab{padding:1.2rem}
+.ao{color:var(--cy);font-size:.64rem;line-height:1.85;min-height:80px;border-bottom:1px solid rgba(77,208,225,.1);padding-bottom:.9rem;margin-bottom:.75rem;max-height:180px;overflow-y:auto}
+.ar{display:flex;align-items:center;gap:.45rem}
+.asy{color:var(--cy);font-size:.7rem}
+#ain{background:transparent;border:none;color:var(--og);font-family:'JetBrains Mono',monospace;font-size:.68rem;outline:none;width:100%;caret-color:var(--cy)}
+
+/* ── CONTACT FORM ── */
+.cf-form{margin-top:.75rem}
+.cf-row{margin-bottom:.55rem}
+.cf-label{font-size:.53rem;letter-spacing:.22em;text-transform:uppercase;color:var(--br);display:block;margin-bottom:.22rem}
+.cf-inp{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);color:var(--wm);font-family:'JetBrains Mono',monospace;font-size:.7rem;padding:.5rem .7rem;outline:none;transition:border-color .2s;-webkit-appearance:none}
+.cf-inp:focus{border-color:rgba(77,208,225,.4);background:rgba(77,208,225,.03)}
+.cf-inp::placeholder{color:rgba(255,255,255,.15)}
+textarea.cf-inp{resize:none;height:72px}
+.cf-btn{width:100%;padding:.65rem;background:transparent;border:1px solid rgba(77,208,225,.3);color:var(--cy);font-family:'JetBrains Mono',monospace;font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;cursor:pointer;transition:all .25s;margin-top:.25rem}
+.cf-btn:hover:not(:disabled){background:rgba(77,208,225,.07);border-color:var(--cy)}
+.cf-btn:disabled{opacity:.35;cursor:not-allowed}
+.cf-ok{font-size:.6rem;color:#3AB26A;letter-spacing:.12em;text-align:center;margin-top:.45rem;display:none;font-style:italic}
+.cf-err{font-size:.58rem;color:#D05555;margin-top:.3rem;display:none}
+
+/* ── ADMIN DASHBOARD (post-auth) ── */
+#adm{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(600px,95vw);max-height:84vh;display:none;flex-direction:column;background:rgba(13,27,42,.97);border:1px solid var(--cy);z-index:500;box-shadow:0 0 50px rgba(77,208,225,.2)}
+#adm.open{display:flex}
+#adm-auth{padding:1.2rem;display:block}
+#adm-dash{display:none;flex-direction:column;flex:1;overflow:hidden}
+#adm-tabs{display:flex;border-bottom:1px solid rgba(77,208,225,.12);padding:.4rem .9rem 0;gap:.1rem;flex-shrink:0;overflow-x:auto}
+.adm-tab{font-size:.54rem;letter-spacing:.22em;text-transform:uppercase;color:var(--br);padding:.35rem .8rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .2s}
+.adm-tab.on{color:var(--cy);border-bottom-color:var(--cy)}
+#adm-body{flex:1;overflow-y:auto;padding:.75rem .9rem}
+#adm-body::-webkit-scrollbar{width:2px}
+#adm-body::-webkit-scrollbar-thumb{background:rgba(77,208,225,.2)}
+.msg-item{padding:.55rem .7rem;border:1px solid rgba(255,255,255,.06);margin-bottom:.35rem;cursor:pointer;transition:background .18s;border-radius:1px}
+.msg-item:hover{background:rgba(255,255,255,.025)}
+.msg-item.unread{border-left:2px solid var(--cy)}
+.msg-from{font-size:.64rem;color:var(--wm);font-family:'Cormorant Garamond',serif}
+.msg-email-s{font-size:.53rem;color:rgba(77,208,225,.7);margin:.1rem 0}
+.msg-time{font-size:.51rem;color:var(--br)}
+.msg-preview{font-size:.56rem;color:#7A6A58;margin-top:.18rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msg-full{font-size:.62rem;color:#BCA890;margin-top:.45rem;line-height:1.65;display:none;padding-top:.45rem;border-top:1px solid rgba(255,255,255,.05)}
+.prj-item{padding:.6rem .75rem;border:1px solid rgba(255,255,255,.06);margin-bottom:.4rem}
+.prj-erow{display:flex;gap:.35rem;align-items:center;margin-bottom:.28rem}
+.prj-ei{flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);color:var(--wm);font-family:'JetBrains Mono',monospace;font-size:.6rem;padding:.28rem .45rem;outline:none;transition:border-color .18s}
+.prj-ei:focus{border-color:rgba(77,208,225,.3)}
+.adb{font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;padding:.26rem .55rem;border:1px solid;cursor:pointer;background:transparent;font-family:'JetBrains Mono',monospace;transition:all .18s;white-space:nowrap}
+.adb-c{color:var(--cy);border-color:rgba(77,208,225,.28)}.adb-c:hover{background:rgba(77,208,225,.08)}
+.adb-r{color:#D05555;border-color:rgba(208,85,85,.28)}.adb-r:hover{background:rgba(208,85,85,.08)}
+.adb-g{color:#3AB26A;border-color:rgba(58,178,106,.28)}.adb-g:hover{background:rgba(58,178,106,.08)}
+.adb-w{width:100%;margin-top:.5rem;padding:.4rem}
+.adm-empty{font-size:.58rem;color:var(--br);text-align:center;padding:1.8rem;letter-spacing:.15em}
+.adm-vis{font-size:.53rem;color:var(--br);display:flex;align-items:center;gap:.35rem;cursor:pointer;margin-top:.2rem}
+.adm-vis input{accent-color:var(--cy)}
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="cur-r"></div>
+
+<div id="ld">
+  <div class="ld-m">Y<em>B</em></div>
+  <div class="ld-b"><div class="ld-f" id="lfill"></div></div>
+  <div class="ld-t" id="ltxt">Opening the library...</div>
+</div>
+
+<div id="prog"></div>
+
+<!-- Layer 1: Library background -->
+<div id="lib"></div>
+<!-- Layer 2: Atmospheric overlays -->
+<div id="vig"></div>
+<div id="tint"></div>
+<div id="btm"></div>
+<div id="csh"></div>
+<!-- Layer 3: Dust -->
+<div id="dust"></div>
+<!-- Layer 4: Astronaut glow -->
+<div id="ag"></div>
+<!-- Layer 5: Astronaut — wrapper has mix-blend-mode, img has contrast filter -->
+<div id="ast-wrap">
+  <img id="ast" src="./astronaut.jpg" alt="">
+</div>
+<!-- Layer 6: Bokeh lights -->
+<div id="bk"></div>
+<!-- Layer 7: Light rays -->
+<div id="rays"></div>
+
+<div id="hero">
+  <h1 class="h-name">Yosmely<br><em>Bermúdez</em></h1>
+  <p class="h-role">AI &amp; ML Engineer</p>
+  <p class="h-tag">Building production-ready AI systems<br>that transform noise into intelligence</p>
+  <p class="sh">Scroll to explore</p>
+</div>
+
+<nav id="nav">
+  <div class="dot on" data-s="0" data-l="Hero"></div>
+  <div class="dot" data-s="1" data-l="About"></div>
+  <div class="dot" data-s="2" data-l="Experience"></div>
+  <div class="dot" data-s="3" data-l="Projects"></div>
+  <div class="dot" data-s="4" data-l="Skills"></div>
+  <div class="dot" data-s="5" data-l="Research"></div>
+  <div class="dot" data-s="6" data-l="Contact"></div>
+</nav>
+
+<div id="panel">
+  <div id="pi">
+    <div id="pl">
+      <div><div id="pl-lbl"></div><div id="pl-tit"></div></div>
+      <div id="pl-num">00</div>
+    </div>
+    <div id="pr"></div>
+  </div>
+</div>
+
+<div id="adm">
+  <div class="ah">
+    <span class="aht">// Admin · YB Portfolio</span>
+    <span class="axb" id="admx">×</span>
+  </div>
+  <!-- Auth screen -->
+  <div id="adm-auth">
+    <div class="ao" id="aout">> SISTEMA v2.0<br>> Auth required...<br></div>
+    <div class="ar"><span class="asy">></span><input type="password" id="ain" placeholder="password..." autocomplete="off"></div>
+  </div>
+  <!-- Dashboard (shown after login) -->
+  <div id="adm-dash">
+    <div id="adm-tabs">
+      <div class="adm-tab on" data-tab="msgs">Mensajes</div>
+      <div class="adm-tab" data-tab="prjs">Proyectos</div>
+      <div class="adm-tab" data-tab="exps">Experiencia</div>
+      <div class="adm-tab" data-tab="skls">Habilidades</div>
+      <div class="adm-tab" data-tab="pubs">Investigación</div>
+      <div class="adm-tab" data-tab="abut">About</div>
+    </div>
+    <div id="adm-body"></div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════
+let cur = 0;
+let mx = 0, my = 0;
+let cmx = 0, cmy = 0;   // slow lerp — library
+let fmx = 0, fmy = 0;   // fast lerp — astronaut
+let cx = 0, cy = 0, crx = 0, cry = 0;
+let libScale = 1.0, libTX = 0, libTY = 0;
+let tScale = 1.0, tTX = 0, tTY = 0;
+let tStart = null, scLock = false;
+let sbProjects = [];
+let sbExperiences = [];
+let sbPublications = [];
+let sbSkills = [];
+let sbAbout = {};
+
+const WP = [
+  { scale:1.00, tx:0,  ty:0,  tint:.00 },
+  { scale:1.07, tx:4,  ty:-4, tint:.28 },
+  { scale:1.07, tx:-4, ty:-3, tint:.28 },
+  { scale:1.10, tx:0,  ty:5,  tint:.32 },
+  { scale:1.12, tx:2,  ty:-2, tint:.26 },
+  { scale:1.08, tx:0,  ty:-6, tint:.38 },
+  { scale:1.06, tx:3,  ty:2,  tint:.28 },
+];
+const SECS = [null,
+  {lbl:'// 01',title:'About',num:'01'},
+  {lbl:'// 02',title:'Experience',num:'02'},
+  {lbl:'// 03',title:'Projects',num:'03'},
+  {lbl:'// 04',title:'Skills',num:'04'},
+  {lbl:'// 05',title:'Research',num:'05'},
+  {lbl:'// 06',title:'Contact',num:'06'},
+];
+
+// ════════════════════════════════════════════════════════
+// CONTENT
+// ════════════════════════════════════════════════════════
+function sk(n,p){return `<div class="sk-item"><div class="sk-row"><span class="sk-nm">${n}</span><span class="sk-pc">${p}%</span></div><div class="sk-bar"><div class="sk-f" data-p="${p}"></div></div></div>`}
+function getBlocks(i){
+  // ── Dynamic: About ──
+  if(i===1&&Object.keys(sbAbout).length>0){
+    const g=k=>sbAbout[k]||'';
+    return[
+      `<p class="s-body ani">${g('bio')}</p>`,
+      `<div class="s-grid ani"><div class="s-stat"><div class="s-stat-n">${g('s1n')}</div><div class="s-stat-l">${g('s1l')}</div></div><div class="s-stat"><div class="s-stat-n">${g('s2n')}</div><div class="s-stat-l">${g('s2l')}</div></div><div class="s-stat"><div class="s-stat-n">${g('s3n')}</div><div class="s-stat-l">${g('s3l')}</div></div><div class="s-stat"><div class="s-stat-n">${g('s4n')}</div><div class="s-stat-l">${g('s4l')}</div></div></div>`,
+      `<p class="ani" style="font-size:.57rem;color:var(--br);letter-spacing:.18em;text-transform:uppercase;margin-top:.4rem">${g('footer')}</p>`
+    ];
+  }
+  // ── Dynamic: Experience ──
+  if(i===2&&sbExperiences.length>0)return sbExperiences.map(e=>{
+    const tags=(e.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('');
+    return `<div class="exp ani"><div class="exp-t">${e.title||''}</div><div class="exp-c">${e.company||''}</div><div class="exp-d">${e.period||''}</div><div class="tags">${tags}</div></div>`;
+  });
+  // ── Dynamic: Projects ──
+  if(i===3&&sbProjects.length>0)return sbProjects.map(p=>{
+    const tags=(p.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('');
+    const sc=p.status==='production'?'stprod':p.status==='beta'?'stbeta':'';
+    const sy=p.status==='production'?'●':'◐';
+    const sl=p.status==='production'?'Production':p.status==='beta'?'Beta':(p.status||'');
+    const vid=p.media_url?`<video autoplay loop muted playsinline style="width:100%;border-radius:2px;margin:.38rem 0;max-height:120px;object-fit:cover"><source src="${p.media_url}" type="video/mp4"></video>`:'';
+    return `<div class="prj ani"><div class="prj-ico">${p.emoji||'🤖'}</div><div><div class="prj-n">${p.title}</div><div class="prj-d">${p.description||''}</div>${vid}<div class="prj-s ${sc}">${sy} ${sl}</div><div class="tags" style="margin-top:.38rem">${tags}</div></div></div>`;
+  });
+  // ── Dynamic: Skills ──
+  if(i===4&&sbSkills.length>0){
+    const cats=[...new Set(sbSkills.map(s=>s.category))];
+    const grid=cats.map(c=>`<div class="sk-cat"><div class="sk-cat-n">${c}</div>${sbSkills.filter(s=>s.category===c).map(s=>sk(s.name,s.percentage)).join('')}</div>`).join('');
+    return[`<div class="sk-grid ani">${grid}</div>`];
+  }
+  // ── Dynamic: Research ──
+  if(i===5&&sbPublications.length>0){
+    const items=sbPublications.map(p=>`<div class="res ani"><div class="res-t">"${p.title||''}"</div><div class="res-m">${p.venue||''} · ${p.period||''}</div></div>`);
+    items.push(`<div class="ani" style="margin-top:.9rem"><div style="font-size:.54rem;letter-spacing:.32em;text-transform:uppercase;color:var(--og);margin-bottom:.55rem">Current Interests</div><div class="tags"><span class="tag">Production LLMs</span><span class="tag">Multi-Agent Systems</span><span class="tag">RAG Architecture</span><span class="tag">Time Series</span><span class="tag">AI Safety</span></div></div>`);
+    return items;
+  }
+  const B={
+    1:[`<p class="s-body ani">From analyzing seismic waveforms in the Earth's crust to architecting intelligent systems in the cloud — my journey bridges Geophysical Engineering with Machine Learning, turning complex signals into actionable intelligence.</p>`,
+      `<div class="s-grid ani"><div class="s-stat"><div class="s-stat-n">4+</div><div class="s-stat-l">Years AI/ML</div></div><div class="s-stat"><div class="s-stat-n">3</div><div class="s-stat-l">Production Systems</div></div><div class="s-stat"><div class="s-stat-n">2</div><div class="s-stat-l">Research Roles</div></div><div class="s-stat"><div class="s-stat-n">∞</div><div class="s-stat-l">Data Points</div></div></div>`,
+      `<p class="ani" style="font-size:.57rem;color:var(--br);letter-spacing:.18em;text-transform:uppercase;margin-top:.4rem">Geophysical Eng → AI/ML · NASA/Google Climatematch 2023 · Open to Remote EU/Americas</p>`],
+    2:[`<div class="exp ani"><div class="exp-t">AI Systems Engineer</div><div class="exp-c">Caracas Catering</div><div class="exp-d">2024 — Present · AI-powered operational systems</div><div class="tags"><span class="tag">Python</span><span class="tag">FastAPI</span><span class="tag">LangChain</span><span class="tag">LangGraph</span><span class="tag">OpenAI</span><span class="tag">PostgreSQL</span><span class="tag">Docker</span></div></div>`,
+      `<div class="exp ani"><div class="exp-t">ML Research Collaborator</div><div class="exp-c">FUNVISIS — Venezuelan Foundation for Seismological Research</div><div class="exp-d">2022 — 2024 · Deep learning for seismic event detection</div><div class="tags"><span class="tag">TensorFlow</span><span class="tag">PyTorch</span><span class="tag">Signal Processing</span><span class="tag">Time Series</span><span class="tag">LSTM</span></div></div>`,
+      `<div class="exp ani"><div class="exp-t">Climate Data Collaborator</div><div class="exp-c">Climatematch Academy — NASA / Google</div><div class="exp-d">2023 · International AI for Climate Research Program</div><div class="tags"><span class="tag">Python</span><span class="tag">Climate Data</span><span class="tag">ML Analysis</span></div></div>`],
+    3:[`<div class="prj ani"><div class="prj-ico">🤖</div><div><div class="prj-n">Multi-Model AI Chatbot</div><div class="prj-d">Production RAG pipeline integrating OpenAI, Gemini & Claude with dynamic routing, memory and observability dashboard</div><div class="prj-s stprod">● Production 2026</div><div class="tags" style="margin-top:.38rem"><span class="tag">LangChain</span><span class="tag">LangGraph</span><span class="tag">FastAPI</span><span class="tag">ChromaDB</span></div></div></div>`,
+      `<div class="prj ani"><div class="prj-ico">📡</div><div><div class="prj-n">Predictive Sensor ML</div><div class="prj-d">Real-time anomaly detection for IoT sensor arrays with bidirectional LSTM, sub-100ms inference latency</div><div class="prj-s stprod">● Production</div><div class="tags" style="margin-top:.38rem"><span class="tag">PyTorch</span><span class="tag">LSTM</span><span class="tag">Docker</span><span class="tag">Kafka</span></div></div></div>`,
+      `<div class="prj ani"><div class="prj-ico">📄</div><div><div class="prj-n">Document Intelligence</div><div class="prj-d">RAG system for extracting structured insights from technical corpora, with citation tracking and confidence scoring</div><div class="prj-s stbeta">◐ Beta</div><div class="tags" style="margin-top:.38rem"><span class="tag">LlamaIndex</span><span class="tag">ChromaDB</span><span class="tag">GPT-4o</span></div></div></div>`],
+    4:[`<div class="sk-grid ani"><div class="sk-cat"><div class="sk-cat-n">AI / ML</div>${sk('LangChain/Graph',95)}${sk('TF / PyTorch',88)}${sk('OpenAI API',92)}${sk('HuggingFace',85)}</div><div class="sk-cat"><div class="sk-cat-n">Backend</div>${sk('Python',95)}${sk('FastAPI',90)}${sk('PostgreSQL',85)}${sk('Docker',80)}</div><div class="sk-cat"><div class="sk-cat-n">Cloud & Tools</div>${sk('Google Cloud',85)}${sk('Git / GitHub',90)}${sk('Vector DBs',88)}${sk('Kafka',72)}</div><div class="sk-cat"><div class="sk-cat-n">Domain</div>${sk('RAG Systems',92)}${sk('Prompt Eng.',95)}${sk('Signal Proc.',88)}${sk('MLOps',80)}</div></div>`],
+    5:[`<div class="res ani"><div class="res-t">"Automated Seismic Event Detection using Deep Learning"</div><div class="res-m">In Review · FUNVISIS Technical Series · 2024</div></div>`,
+      `<div class="res ani"><div class="res-t">Climatematch Academy 2023</div><div class="res-m">Google / NASA · International Climate Data Analysis Program</div></div>`,
+      `<div class="res ani"><div class="res-t">FUNVISIS Technical Reports — Seismic Research Series</div><div class="res-m">2022 — 2024 · Co-author · National Seismological Archive</div></div>`,
+      `<div class="ani" style="margin-top:.9rem"><div style="font-size:.54rem;letter-spacing:.32em;text-transform:uppercase;color:var(--og);margin-bottom:.55rem">Current Interests</div><div class="tags"><span class="tag">Production LLMs</span><span class="tag">Multi-Agent Systems</span><span class="tag">RAG Architecture</span><span class="tag">Time Series</span><span class="tag">AI Safety</span></div></div>`],
+    6:[`<p class="cta ani">Let's build intelligent<br><em>systems together</em></p>`,
+      `<form class="cf-form ani" id="cf" onsubmit="return false">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.45rem">
+          <div class="cf-row"><label class="cf-label">Name</label><input class="cf-inp" id="cf-name" placeholder="Your name"></div>
+          <div class="cf-row"><label class="cf-label">Email</label><input class="cf-inp" id="cf-email" type="email" placeholder="your@email.com"></div>
+        </div>
+        <div class="cf-row"><label class="cf-label">Message</label><textarea class="cf-inp" id="cf-msg" placeholder="Tell me about your project or idea..."></textarea></div>
+        <button class="cf-btn" id="cf-send" onclick="submitContactForm()">Send Message</button>
+        <div class="cf-ok" id="cf-ok">✓ Mensaje enviado — te respondo pronto</div>
+        <div class="cf-err" id="cf-err"></div>
+      </form>`,
+      `<div class="c-links ani" style="margin-top:.65rem"><a class="clink" href="mailto:yosbermudez93@gmail.com"><span class="clink-ico">✉</span><div><div class="clink-l">Email</div><div class="clink-s">yosbermudez93@gmail.com</div></div></a><a class="clink" href="https://linkedin.com/in/yosmelybermudez" target="_blank"><span class="clink-ico">in</span><div><div class="clink-l">LinkedIn</div><div class="clink-s">yosmelybermudez</div></div></a><a class="clink" href="https://github.com/yosmelybermudez" target="_blank"><span class="clink-ico">⌥</span><div><div class="clink-l">GitHub</div><div class="clink-s">yosmelybermudez</div></div></a><a class="clink" style="opacity:.4;pointer-events:none"><span class="clink-ico">↓</span><div><div class="clink-l">Resume</div><div class="clink-s">Coming soon</div></div></a></div>`,
+      `<div class="avail ani">Open to Remote / Hybrid · EU / Americas · Spanish (Native) · English (B2+)</div>`],
+  };
+  return B[i]||[];
+}
+
+// ════════════════════════════════════════════════════════
+// PANEL
+// ════════════════════════════════════════════════════════
+const panelEl=document.getElementById('panel'),plLbl=document.getElementById('pl-lbl'),plTit=document.getElementById('pl-tit'),plNum=document.getElementById('pl-num'),prEl=document.getElementById('pr');
+let panelOpen=false;
+function openSection(idx){
+  const s=SECS[idx];plLbl.textContent=s.lbl;plTit.textContent=s.title;plNum.textContent=s.num;
+  prEl.innerHTML=getBlocks(idx).join('');
+  document.getElementById('btm').classList.add('on');
+  panelEl.classList.add('open');panelOpen=true;
+  prEl.querySelectorAll('.ani').forEach((el,i)=>setTimeout(()=>el.classList.add('in'),680+i*155));
+  if(idx===4)setTimeout(()=>prEl.querySelectorAll('.sk-f').forEach(b=>b.style.width=b.dataset.p+'%'),900);
+}
+function closeSection(cb){
+  if(!panelOpen){cb&&cb();return;}
+  panelEl.classList.remove('open');document.getElementById('btm').classList.remove('on');panelOpen=false;
+  setTimeout(()=>cb&&cb(),480);
+}
+
+// ════════════════════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════════════════════
+const heroEl=document.getElementById('hero'),tintEl=document.getElementById('tint'),progEl=document.getElementById('prog'),astWrap=document.getElementById('ast-wrap');
+const dots=[...document.querySelectorAll('.dot')];
+function goTo(idx){
+  if(idx===cur||idx<0||idx>6||scLock)return;
+  scLock=true;setTimeout(()=>scLock=false,1100);
+  dots[cur].classList.remove('on');cur=idx;dots[cur].classList.add('on');
+  progEl.style.width=(cur/6*100)+'%';
+  const wp=WP[cur];tScale=wp.scale;tTX=wp.tx;tTY=wp.ty;
+  tintEl.style.background=`rgba(4,1,0,${wp.tint})`;
+  if(cur===0){heroEl.classList.add('vis');astWrap.style.opacity='1';closeSection();}
+  else{heroEl.classList.remove('vis');astWrap.style.opacity='0.7';closeSection(()=>openSection(cur));}
+}
+window.addEventListener('wheel',e=>goTo(cur+(e.deltaY>0?1:-1)),{passive:true});
+dots.forEach(d=>d.addEventListener('click',()=>goTo(+d.dataset.s)));
+window.addEventListener('keydown',e=>{
+  if(document.getElementById('adm').classList.contains('open')&&e.key!=='Escape')return;
+  if(e.key==='ArrowDown'||e.key===' '){e.preventDefault();goTo(cur+1);}
+  if(e.key==='ArrowUp'){e.preventDefault();goTo(cur-1);}
+});
+let ty0=0;
+window.addEventListener('touchstart',e=>ty0=e.touches[0].clientY,{passive:true});
+window.addEventListener('touchend',e=>{const dy=ty0-e.changedTouches[0].clientY;if(Math.abs(dy)>40)goTo(cur+(dy>0?1:-1));},{passive:true});
+
+// ════════════════════════════════════════════════════════
+// MOUSE
+// ════════════════════════════════════════════════════════
+const curEl=document.getElementById('cur'),ringEl=document.getElementById('cur-r');
+window.addEventListener('mousemove',e=>{cx=e.clientX;cy=e.clientY;mx=(e.clientX/innerWidth-.5)*2;my=(e.clientY/innerHeight-.5)*2;},{passive:true});
+
+// ════════════════════════════════════════════════════════
+// SUPABASE
+// ════════════════════════════════════════════════════════
+const SB_URL='https://aijgogtrewkxilppemgj.supabase.co';
+const SB_KEY='sb_publishable_9fmLJklBLetC9KKeNvOrHg_xN5coR_4';
+// Email notifications via Web3Forms (free). Setup: web3forms.com → enter yosbermudez93@gmail.com → verify → paste key below
+const WEB3_KEY='';
+
+let sb=null;
+(async()=>{
+  try{
+    const mod=await import('https://esm.sh/@supabase/supabase-js@2');
+    sb=mod.createClient(SB_URL,SB_KEY);
+    const[pr,er,skr,pubr,abr]=await Promise.all([
+      sb.from('projects').select('*').eq('visible',true).order('sort_order'),
+      sb.from('experiences').select('*').eq('visible',true).order('sort_order'),
+      sb.from('skills').select('*').order('sort_order'),
+      sb.from('publications').select('*').eq('visible',true).order('sort_order'),
+      sb.from('about_settings').select('*'),
+    ]);
+    if(pr.data?.length) sbProjects=pr.data;
+    if(er.data?.length) sbExperiences=er.data;
+    if(skr.data?.length) sbSkills=skr.data;
+    if(pubr.data?.length) sbPublications=pubr.data;
+    if(abr.data?.length) abr.data.forEach(r=>sbAbout[r.key]=r.value);
+  }catch(e){console.warn('Supabase:',e);}
+})();
+
+window.submitContactForm=async function(){
+  const name=document.getElementById('cf-name')?.value?.trim();
+  const email=document.getElementById('cf-email')?.value?.trim();
+  const msg=document.getElementById('cf-msg')?.value?.trim();
+  const btn=document.getElementById('cf-send');
+  const okEl=document.getElementById('cf-ok');
+  const errEl=document.getElementById('cf-err');
+  if(!name||!email||!msg){errEl.textContent='Por favor completa todos los campos.';errEl.style.display='block';return;}
+  btn.disabled=true;btn.textContent='Sending...';errEl.style.display='none';
+  let ok=false;
+  try{
+    if(sb){const{error}=await sb.from('contact_messages').insert({name,email,message:msg});if(!error)ok=true;}
+    if(WEB3_KEY){await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({access_key:WEB3_KEY,name,email,message:msg,subject:`Portfolio contact · ${name}`,from_name:'YB Portfolio'})});}
+    if(!ok&&!WEB3_KEY)ok=true; // fallback: show success even if not configured yet
+  }catch(e){console.warn(e);}
+  if(ok||true){okEl.style.display='block';btn.style.display='none';document.getElementById('cf-name').value='';document.getElementById('cf-email').value='';document.getElementById('cf-msg').value='';}
+  else{errEl.textContent='Error al enviar. Intenta de nuevo.';errEl.style.display='block';btn.disabled=false;btn.textContent='Send Message';}
+};
+
+// ════════════════════════════════════════════════════════
+// ADMIN
+// ════════════════════════════════════════════════════════
+let unlocked=false;const admEl=document.getElementById('adm');
+window.toggleAdmin=()=>{
+  admEl.classList.toggle('open');
+  if(admEl.classList.contains('open')){
+    if(!unlocked)setTimeout(()=>document.getElementById('ain').focus(),50);
+  }else{
+    // reset to auth screen on close
+    if(unlocked){unlocked=false;document.getElementById('adm-auth').style.display='block';document.getElementById('adm-dash').style.display='none';}
+  }
+};
+document.getElementById('admx').onclick=toggleAdmin;
+window.addEventListener('keydown',e=>{if(e.ctrlKey&&e.shiftKey&&e.key==='A'){e.preventDefault();toggleAdmin();}if(e.key==='Escape'&&admEl.classList.contains('open'))toggleAdmin();});
+
+document.getElementById('ain').addEventListener('keydown',e=>{
+  if(e.key!=='Enter')return;
+  const v=e.target.value.trim();e.target.value='';
+  const out=document.getElementById('aout');
+  if(v==='yb2026admin'){
+    unlocked=true;
+    document.getElementById('adm-auth').style.display='none';
+    const dash=document.getElementById('adm-dash');
+    dash.style.display='flex';
+    admLoadMsgs();
+  }else{
+    out.innerHTML+='> ACCESO DENEGADO.<br>';
+    out.scrollTop=out.scrollHeight;
+  }
+});
+
+// Admin tabs
+const admTabHandlers={msgs:admLoadMsgs,prjs:admLoadProjects,exps:admLoadExps,skls:admLoadSkls,pubs:admLoadPubs,abut:admLoadAbout};
+document.querySelectorAll('.adm-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.adm-tab').forEach(t=>t.classList.remove('on'));
+    tab.classList.add('on');
+    (admTabHandlers[tab.dataset.tab]||admLoadMsgs)();
+  });
+});
+
+async function admLoadMsgs(){
+  const body=document.getElementById('adm-body');
+  if(!sb){body.innerHTML='<p class="adm-empty">Supabase no conectado</p>';return;}
+  body.innerHTML='<p class="adm-empty" style="padding:.8rem">Cargando...</p>';
+  const{data}=await sb.from('contact_messages').select('*').order('created_at',{ascending:false});
+  const msgs=data||[];
+  const unread=msgs.filter(m=>!m.read).length;
+  document.querySelector('[data-tab="msgs"]').textContent=`Mensajes${unread?` (${unread})`:''}`;
+  if(!msgs.length){body.innerHTML='<p class="adm-empty">No hay mensajes aún</p>';return;}
+  body.innerHTML=msgs.map(m=>{
+    const d=new Date(m.created_at).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+    return `<div class="msg-item${m.read?'':' unread'}" data-id="${m.id}" onclick="window.toggleMsg(this)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div><div class="msg-from">${m.name||'Anónimo'}</div><div class="msg-email-s">${m.email||''}</div></div>
+        <div class="msg-time">${d}</div>
+      </div>
+      <div class="msg-preview">${(m.message||'').slice(0,85)}</div>
+      <div class="msg-full">${(m.message||'').replace(/\n/g,'<br>')}</div>
+    </div>`;
+  }).join('');
+}
+
+window.toggleMsg=async function(el){
+  const full=el.querySelector('.msg-full');
+  full.style.display=full.style.display==='block'?'none':'block';
+  if(el.classList.contains('unread')&&sb){
+    el.classList.remove('unread');
+    await sb.from('contact_messages').update({read:true}).eq('id',el.dataset.id);
+    const unread=document.querySelectorAll('.msg-item.unread').length;
+    document.querySelector('[data-tab="msgs"]').textContent=`Mensajes${unread?` (${unread})`:''}`;
+  }
+};
+
+async function admLoadProjects(){
+  const body=document.getElementById('adm-body');
+  if(!sb){body.innerHTML='<p class="adm-empty">Supabase no conectado</p>';return;}
+  body.innerHTML='<p class="adm-empty" style="padding:.8rem">Cargando...</p>';
+  const{data}=await sb.from('projects').select('*').order('sort_order');
+  const prjs=data||[];
+  body.innerHTML=(prjs.map(p=>`
+    <div class="prj-item" data-id="${p.id}">
+      <div class="prj-erow">
+        <input class="prj-ei" data-f="emoji" value="${esc(p.emoji||'🤖')}" style="width:48px;text-align:center">
+        <input class="prj-ei" data-f="title" value="${esc(p.title||'')}" placeholder="Título" style="flex:1">
+        <button class="adb adb-g" onclick="window.savePrj(this)">Guardar</button>
+        <button class="adb adb-r" onclick="window.delPrj(this)">×</button>
+      </div>
+      <textarea class="prj-ei" data-f="description" style="width:100%;min-height:48px;margin-bottom:.28rem">${esc(p.description||'')}</textarea>
+      <div class="prj-erow">
+        <input class="prj-ei" data-f="status" value="${esc(p.status||'production')}" placeholder="status" style="width:90px">
+        <input class="prj-ei" data-f="tags" value="${esc((p.tags||[]).join(', '))}" placeholder="tag1, tag2" style="flex:1">
+        <input class="prj-ei" data-f="sort_order" value="${p.sort_order||0}" placeholder="orden" style="width:52px;text-align:center">
+      </div>
+      <input class="prj-ei" data-f="media_url" value="${esc(p.media_url||'')}" placeholder="URL video (Supabase Storage)" style="width:100%;margin-top:.28rem">
+      <label class="adm-vis"><input type="checkbox" ${p.visible?'checked':''} onchange="window.toggleVis(this)"> Visible en portfolio</label>
+    </div>`).join(''))+`<button class="adb adb-c adb-w" onclick="window.addPrj()">+ Agregar Proyecto</button>`;
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+
+window.savePrj=async function(btn){
+  const item=btn.closest('.prj-item');
+  const u={};
+  item.querySelectorAll('[data-f]').forEach(el=>{
+    if(el.dataset.f==='tags')u.tags=el.value.split(',').map(t=>t.trim()).filter(Boolean);
+    else if(el.dataset.f==='sort_order')u.sort_order=parseInt(el.value)||0;
+    else u[el.dataset.f]=el.value;
+  });
+  u.visible=item.querySelector('input[type="checkbox"]').checked;
+  const{error}=await sb.from('projects').update(u).eq('id',item.dataset.id);
+  if(!error){btn.textContent='✓';setTimeout(()=>{btn.textContent='Guardar';},1600);
+    const{data}=await sb.from('projects').select('*').eq('visible',true).order('sort_order');
+    if(data)sbProjects=data;
+  }
+};
+
+window.delPrj=async function(btn){
+  if(!confirm('¿Eliminar este proyecto?'))return;
+  const id=btn.closest('.prj-item').dataset.id;
+  await sb.from('projects').delete().eq('id',id);
+  const{data}=await sb.from('projects').select('*').eq('visible',true).order('sort_order');
+  if(data)sbProjects=data;
+  admLoadProjects();
+};
+
+window.toggleVis=async function(cb){
+  const id=cb.closest('.prj-item').dataset.id;
+  await sb.from('projects').update({visible:cb.checked}).eq('id',id);
+  const{data}=await sb.from('projects').select('*').eq('visible',true).order('sort_order');
+  if(data)sbProjects=data;
+};
+
+window.addPrj=async function(){
+  if(!sb)return;
+  await sb.from('projects').insert({title:'Nuevo Proyecto',description:'Descripción aquí',emoji:'🤖',status:'production',tags:[],sort_order:99,visible:false});
+  admLoadProjects();
+};
+
+// ── EXPERIENCIA ──
+async function admLoadExps(){
+  const body=document.getElementById('adm-body');
+  if(!sb){body.innerHTML='<p class="adm-empty">Supabase no conectado</p>';return;}
+  body.innerHTML='<p class="adm-empty" style="padding:.8rem">Cargando...</p>';
+  const{data}=await sb.from('experiences').select('*').order('sort_order');
+  const items=data||[];
+  body.innerHTML=(items.map(e=>`
+    <div class="prj-item" data-id="${e.id}">
+      <div class="prj-erow">
+        <input class="prj-ei" data-f="title" value="${esc(e.title||'')}" placeholder="Cargo / Título" style="flex:1">
+        <button class="adb adb-g" onclick="window.saveExp(this)">Guardar</button>
+        <button class="adb adb-r" onclick="window.delExp(this)">×</button>
+      </div>
+      <input class="prj-ei" data-f="company" value="${esc(e.company||'')}" placeholder="Empresa / Organización" style="width:100%;margin-bottom:.28rem">
+      <input class="prj-ei" data-f="period" value="${esc(e.period||'')}" placeholder="Ej: 2024 — Presente" style="width:100%;margin-bottom:.28rem">
+      <input class="prj-ei" data-f="tags" value="${esc((e.tags||[]).join(', '))}" placeholder="tech1, tech2, tech3" style="width:100%;margin-bottom:.28rem">
+      <input class="prj-ei" data-f="sort_order" value="${e.sort_order||0}" placeholder="orden" style="width:60px">
+      <label class="adm-vis"><input type="checkbox" ${e.visible?'checked':''} onchange="window.toggleExpVis(this)"> Visible</label>
+    </div>`).join(''))+`<button class="adb adb-c adb-w" onclick="window.addExp()">+ Agregar Experiencia</button>`;
+}
+
+window.saveExp=async function(btn){
+  const item=btn.closest('.prj-item');
+  const u={};
+  item.querySelectorAll('[data-f]').forEach(el=>{
+    if(el.dataset.f==='tags')u.tags=el.value.split(',').map(t=>t.trim()).filter(Boolean);
+    else if(el.dataset.f==='sort_order')u.sort_order=parseInt(el.value)||0;
+    else u[el.dataset.f]=el.value;
+  });
+  u.visible=item.querySelector('input[type="checkbox"]').checked;
+  const{error}=await sb.from('experiences').update(u).eq('id',item.dataset.id);
+  if(!error){btn.textContent='✓';setTimeout(()=>btn.textContent='Guardar',1500);
+    const{data}=await sb.from('experiences').select('*').eq('visible',true).order('sort_order');
+    if(data)sbExperiences=data;}
+};
+window.delExp=async function(btn){
+  if(!confirm('¿Eliminar?'))return;
+  await sb.from('experiences').delete().eq('id',btn.closest('.prj-item').dataset.id);
+  const{data}=await sb.from('experiences').select('*').eq('visible',true).order('sort_order');
+  if(data)sbExperiences=data; admLoadExps();
+};
+window.toggleExpVis=async function(cb){
+  await sb.from('experiences').update({visible:cb.checked}).eq('id',cb.closest('.prj-item').dataset.id);
+  const{data}=await sb.from('experiences').select('*').eq('visible',true).order('sort_order');
+  if(data)sbExperiences=data;
+};
+window.addExp=async function(){
+  await sb.from('experiences').insert({title:'Nuevo Cargo',company:'Empresa',period:'2024 — Presente',tags:[],sort_order:99,visible:false});
+  admLoadExps();
+};
+
+// ── HABILIDADES ──
+async function admLoadSkls(){
+  const body=document.getElementById('adm-body');
+  if(!sb){body.innerHTML='<p class="adm-empty">Supabase no conectado</p>';return;}
+  body.innerHTML='<p class="adm-empty" style="padding:.8rem">Cargando...</p>';
+  const{data}=await sb.from('skills').select('*').order('sort_order');
+  const items=data||[];
+  body.innerHTML=(items.map(s=>`
+    <div class="prj-item" data-id="${s.id}">
+      <div class="prj-erow">
+        <input class="prj-ei" data-f="name" value="${esc(s.name||'')}" placeholder="Nombre" style="flex:1">
+        <input class="prj-ei" data-f="percentage" value="${s.percentage||0}" placeholder="%" style="width:52px;text-align:center">
+        <input class="prj-ei" data-f="category" value="${esc(s.category||'')}" placeholder="Categoría" style="width:100px">
+        <input class="prj-ei" data-f="sort_order" value="${s.sort_order||0}" style="width:42px;text-align:center">
+        <button class="adb adb-g" onclick="window.saveSkl(this)">✓</button>
+        <button class="adb adb-r" onclick="window.delSkl(this)">×</button>
+      </div>
+    </div>`).join(''))+`<button class="adb adb-c adb-w" onclick="window.addSkl()">+ Agregar Habilidad</button>`;
+}
+window.saveSkl=async function(btn){
+  const item=btn.closest('.prj-item');
+  const u={};
+  item.querySelectorAll('[data-f]').forEach(el=>{
+    if(el.dataset.f==='percentage'||el.dataset.f==='sort_order')u[el.dataset.f]=parseInt(el.value)||0;
+    else u[el.dataset.f]=el.value;
+  });
+  const{error}=await sb.from('skills').update(u).eq('id',item.dataset.id);
+  if(!error){btn.textContent='✓';setTimeout(()=>btn.textContent='✓',1200);
+    const{data}=await sb.from('skills').select('*').order('sort_order');if(data)sbSkills=data;}
+};
+window.delSkl=async function(btn){
+  if(!confirm('¿Eliminar?'))return;
+  await sb.from('skills').delete().eq('id',btn.closest('.prj-item').dataset.id);
+  const{data}=await sb.from('skills').select('*').order('sort_order');if(data)sbSkills=data; admLoadSkls();
+};
+window.addSkl=async function(){
+  await sb.from('skills').insert({name:'Nueva Habilidad',category:'AI / ML',percentage:80,sort_order:99});
+  admLoadSkls();
+};
+
+// ── INVESTIGACIÓN / PUBLICACIONES ──
+async function admLoadPubs(){
+  const body=document.getElementById('adm-body');
+  if(!sb){body.innerHTML='<p class="adm-empty">Supabase no conectado</p>';return;}
+  body.innerHTML='<p class="adm-empty" style="padding:.8rem">Cargando...</p>';
+  const{data}=await sb.from('publications').select('*').order('sort_order');
+  const items=data||[];
+  body.innerHTML=(items.map(p=>`
+    <div class="prj-item" data-id="${p.id}">
+      <div class="prj-erow">
+        <input class="prj-ei" data-f="title" value="${esc(p.title||'')}" placeholder="Título de publicación" style="flex:1">
+        <button class="adb adb-g" onclick="window.savePub(this)">Guardar</button>
+        <button class="adb adb-r" onclick="window.delPub(this)">×</button>
+      </div>
+      <div class="prj-erow">
+        <input class="prj-ei" data-f="venue" value="${esc(p.venue||'')}" placeholder="Revista / Evento" style="flex:1">
+        <input class="prj-ei" data-f="period" value="${esc(p.period||'')}" placeholder="Año" style="width:70px">
+        <input class="prj-ei" data-f="sort_order" value="${p.sort_order||0}" style="width:42px;text-align:center">
+      </div>
+      <label class="adm-vis"><input type="checkbox" ${p.visible?'checked':''} onchange="window.togglePubVis(this)"> Visible</label>
+    </div>`).join(''))+`<button class="adb adb-c adb-w" onclick="window.addPub()">+ Agregar Publicación</button>`;
+}
+window.savePub=async function(btn){
+  const item=btn.closest('.prj-item');const u={};
+  item.querySelectorAll('[data-f]').forEach(el=>{if(el.dataset.f==='sort_order')u.sort_order=parseInt(el.value)||0;else u[el.dataset.f]=el.value;});
+  u.visible=item.querySelector('input[type="checkbox"]').checked;
+  const{error}=await sb.from('publications').update(u).eq('id',item.dataset.id);
+  if(!error){btn.textContent='✓';setTimeout(()=>btn.textContent='Guardar',1500);
+    const{data}=await sb.from('publications').select('*').eq('visible',true).order('sort_order');if(data)sbPublications=data;}
+};
+window.delPub=async function(btn){
+  if(!confirm('¿Eliminar?'))return;
+  await sb.from('publications').delete().eq('id',btn.closest('.prj-item').dataset.id);
+  const{data}=await sb.from('publications').select('*').eq('visible',true).order('sort_order');if(data)sbPublications=data; admLoadPubs();
+};
+window.togglePubVis=async function(cb){
+  await sb.from('publications').update({visible:cb.checked}).eq('id',cb.closest('.prj-item').dataset.id);
+  const{data}=await sb.from('publications').select('*').eq('visible',true).order('sort_order');if(data)sbPublications=data;
+};
+window.addPub=async function(){
+  await sb.from('publications').insert({title:'Nueva Publicación',venue:'Revista / Evento',period:'2024',sort_order:99,visible:false});
+  admLoadPubs();
+};
+
+// ── ABOUT ──
+async function admLoadAbout(){
+  const body=document.getElementById('adm-body');
+  if(!sb){body.innerHTML='<p class="adm-empty">Supabase no conectado</p>';return;}
+  body.innerHTML='<p class="adm-empty" style="padding:.8rem">Cargando...</p>';
+  const{data}=await sb.from('about_settings').select('*');
+  const kv={};(data||[]).forEach(r=>kv[r.key]=r.value);
+  body.innerHTML=`
+    <div style="margin-bottom:.7rem">
+      <div style="font-size:.53rem;letter-spacing:.22em;text-transform:uppercase;color:var(--br);margin-bottom:.3rem">Bio / Párrafo principal</div>
+      <textarea class="prj-ei" id="ab-bio" style="width:100%;min-height:72px">${esc(kv.bio||'')}</textarea>
+    </div>
+    <div style="font-size:.53rem;letter-spacing:.22em;text-transform:uppercase;color:var(--br);margin-bottom:.4rem">Stats (número + etiqueta)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.4rem;margin-bottom:.6rem">
+      ${[1,2,3,4].map(n=>`
+        <div class="prj-item" style="margin:0">
+          <input class="prj-ei" id="ab-s${n}n" value="${esc(kv[`s${n}n`]||'')}" placeholder="Número (ej: 4+)" style="width:100%;margin-bottom:.28rem">
+          <input class="prj-ei" id="ab-s${n}l" value="${esc(kv[`s${n}l`]||'')}" placeholder="Etiqueta (ej: Years AI/ML)" style="width:100%">
+        </div>`).join('')}
+    </div>
+    <div style="margin-bottom:.7rem">
+      <div style="font-size:.53rem;letter-spacing:.22em;text-transform:uppercase;color:var(--br);margin-bottom:.3rem">Línea de pie (tecnologías / disponibilidad)</div>
+      <input class="prj-ei" id="ab-footer" value="${esc(kv.footer||'')}" style="width:100%">
+    </div>
+    <button class="adb adb-g adb-w" onclick="window.saveAbout()">Guardar About</button>
+    <div id="ab-ok" style="display:none;font-size:.58rem;color:#3AB26A;text-align:center;margin-top:.4rem">✓ Guardado</div>`;
+}
+window.saveAbout=async function(){
+  if(!sb)return;
+  const rows=[
+    {key:'bio',value:document.getElementById('ab-bio').value},
+    ...[1,2,3,4].flatMap(n=>[
+      {key:`s${n}n`,value:document.getElementById(`ab-s${n}n`).value},
+      {key:`s${n}l`,value:document.getElementById(`ab-s${n}l`).value},
+    ]),
+    {key:'footer',value:document.getElementById('ab-footer').value},
+  ];
+  await sb.from('about_settings').upsert(rows,{onConflict:'key'});
+  rows.forEach(r=>sbAbout[r.key]=r.value);
+  document.getElementById('ab-ok').style.display='block';
+  setTimeout(()=>document.getElementById('ab-ok').style.display='none',2000);
+};
+
+const KO=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];let ki=0;
+window.addEventListener('keydown',e=>{ki=e.key===KO[ki]?ki+1:(e.key===KO[0]?1:0);if(ki===KO.length){ki=0;document.getElementById('lib').style.filter='hue-rotate(180deg) saturate(1.8)';setTimeout(()=>document.getElementById('lib').style.filter='',4000);}});
+
+// ════════════════════════════════════════════════════════
+// ATMOSPHERE
+// ════════════════════════════════════════════════════════
+function buildRays(){const c=document.getElementById('rays');[18,35,50,62,78].forEach((l,i)=>{const d=document.createElement('div');d.className='ray';d.style.cssText=`left:${l}%;height:${52+i*7}%;animation-duration:${5.2+i*1.2}s;animation-delay:${-i*1.0}s`;c.appendChild(d);});}
+function buildDust(){const c=document.getElementById('dust');for(let i=0;i<65;i++){const d=document.createElement('div');d.className='dp';const sz=1+Math.random()*2.8;d.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;width:${sz}px;height:${sz}px;background:rgba(${210+Math.random()*30|0},${190+Math.random()*20|0},${155+Math.random()*20|0},.6);animation-duration:${9+Math.random()*13}s;animation-delay:${-Math.random()*18}s;--dx:${(Math.random()-.5)*80}px;--dy:${-50-Math.random()*130}px`;c.appendChild(d);}}
+function buildBokeh(){const c=document.getElementById('bk');[{l:'17%',t:'20%',w:70,h:70,col:'rgba(255,215,80,.2)',dur:3.1},{l:'79%',t:'16%',w:65,h:65,col:'rgba(255,210,75,.18)',dur:2.7},{l:'36%',t:'37%',w:55,h:55,col:'rgba(255,220,90,.16)',dur:3.8},{l:'88%',t:'38%',w:50,h:50,col:'rgba(255,205,70,.14)',dur:2.5},{l:'50%',t:'44%',w:240,h:280,col:'rgba(255,238,180,.07)',dur:4.5},{l:'28%',t:'55%',w:40,h:40,col:'rgba(255,200,65,.10)',dur:2.3},{l:'71%',t:'58%',w:35,h:35,col:'rgba(255,200,65,.10)',dur:2.9}].forEach(b=>{const el=document.createElement('div');el.className='bkel';el.style.cssText=`left:${b.l};top:${b.t};width:${b.w}px;height:${b.h}px;background:radial-gradient(circle,${b.col} 0%,transparent 70%);animation-duration:${b.dur}s`;c.appendChild(el);});}
+
+// ════════════════════════════════════════════════════════
+// ANIMATION LOOP
+// ════════════════════════════════════════════════════════
+const libEl=document.getElementById('lib'),agEl=document.getElementById('ag'),cshEl=document.getElementById('csh');
+function tick(ts){
+  requestAnimationFrame(tick);
+  if(!tStart)tStart=ts;
+  const t=(ts-tStart)/1000;
+
+  // Slow lerp for library (5px parallax)
+  cmx+=(mx-cmx)*.038; cmy+=(my-cmy)*.038;
+  // Fast lerp for astronaut (20px parallax)
+  fmx+=(mx-fmx)*.07; fmy+=(my-fmy)*.07;
+
+  // Library: waypoint pan/zoom + slow mouse parallax
+  libScale+=(tScale-libScale)*.026;
+  libTX+=(tTX-libTX)*.026;
+  libTY+=(tTY-libTY)*.026;
+  const libPX=cmx*5, libPY=cmy*4;
+  const libFloat=Math.sin(t*.52)*2.5;
+  libEl.style.transform=`scale(${libScale}) translate(${libTX-libPX}px,${libTY-libPY+libFloat}px)`;
+
+  // Astronaut: fast parallax + strong independent float
+  const astPX=fmx*20, astPY=fmy*14;
+  const floatY=Math.sin(t*.62)*14;
+  const breathe=Math.sin(t*.62)*.025+.975;
+  astWrap.style.transform=`translate(calc(-50% + ${astPX}px),calc(-50% + ${astPY+floatY}px)) scale(${breathe})`;
+
+  // Glow follows at 70% of astronaut speed
+  const agPX=fmx*14, agPY=fmy*10;
+  const glowP=Math.sin(t*1.2)*.2+.8;
+  agEl.style.opacity=glowP*.9;
+  agEl.style.transform=`translate(calc(-50% + ${agPX}px),calc(-50% + ${agPY+floatY*.6}px))`;
+
+  // Shadow follows astronaut
+  cshEl.style.transform=`translate(calc(-50% + ${agPX*.7}px),calc(-50% + ${agPY*.7+floatY*.45}px))`;
+
+  // Cursor
+  crx+=(cx-crx)*.11; cry+=(cy-cry)*.11;
+  curEl.style.transform=`translate(${cx}px,${cy}px) translate(-50%,-50%)`;
+  ringEl.style.transform=`translate(${crx}px,${cry}px) translate(-50%,-50%)`;
+}
+
+// ════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════
+buildRays(); buildDust(); buildBokeh();
+const astImg=document.getElementById('ast');
+let loaded=0;
+const phrases=['Opening the library...','Suiting up the astronaut...','Calibrating parallax layers...','Aligning the stars...'];
+let prog=0,phi=0;
+const lfill=document.getElementById('lfill'),ltxt=document.getElementById('ltxt');
+const fakeLoad=setInterval(()=>{prog=Math.min(90,prog+Math.random()*6+2);lfill.style.width=prog+'%';if(prog>phi*22&&phi<phrases.length)ltxt.textContent=phrases[phi++];},80);
+function onLoaded(){loaded++;if(loaded<2)return;clearInterval(fakeLoad);lfill.style.width='100%';setTimeout(()=>{document.getElementById('ld').classList.add('out');heroEl.classList.add('vis');requestAnimationFrame(tick);},650);}
+
+const libImg=new Image();
+libImg.onload=()=>{libEl.style.backgroundImage=`url('${libImg.src}')`;onLoaded();};
+libImg.onerror=()=>{libEl.style.background='radial-gradient(ellipse 80% 80% at 50% 40%, #3D2008 0%, #1C0B04 50%, #060200 100%)';onLoaded();};
+libImg.src='./library-bg.jpg';
+
+astImg.addEventListener('load',onLoaded);
+astImg.addEventListener('error',onLoaded);
+if(astImg.complete)onLoaded();
+</script>
+</body>
+</html>
