@@ -226,9 +226,29 @@ textarea.cf-inp{resize:none;height:72px}
 .adm-empty{font-size:.58rem;color:var(--br);text-align:center;padding:1.8rem;letter-spacing:.15em}
 .adm-vis{font-size:.53rem;color:var(--br);display:flex;align-items:center;gap:.35rem;cursor:pointer;margin-top:.2rem}
 .adm-vis input{accent-color:var(--cy)}
+
+/* ── VIDEO CARD ── */
+.prj-media{position:relative;width:100%;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.07);border-radius:3px;margin:.45rem 0;overflow:hidden;cursor:pointer}
+.prj-media video{width:100%;display:block;object-fit:contain;max-height:180px;background:#000}
+.prj-media-hint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .22s;background:rgba(0,0,0,.35)}
+.prj-media:hover .prj-media-hint{opacity:1}
+.prj-media-hint span{font-size:.55rem;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.3);padding:.25rem .65rem;backdrop-filter:blur(4px)}
+
+/* ── LIGHTBOX ── */
+#lbx{position:fixed;inset:0;background:rgba(4,1,0,.96);z-index:800;display:none;align-items:center;justify-content:center;cursor:zoom-out}
+#lbx.open{display:flex}
+#lbx video{max-width:92vw;max-height:88vh;object-fit:contain;cursor:default;box-shadow:0 0 80px rgba(0,0,0,.8)}
+#lbx-close{position:absolute;top:1.2rem;right:1.5rem;font-size:1.4rem;color:rgba(255,255,255,.4);cursor:pointer;transition:color .2s;line-height:1}
+#lbx-close:hover{color:var(--cy)}
 </style>
 </head>
 <body>
+
+<!-- Lightbox -->
+<div id="lbx" onclick="window.closeLbx(event)">
+  <span id="lbx-close" onclick="window.closeLbx()">×</span>
+  <video id="lbx-vid" loop autoplay muted playsinline onclick="e=>e.stopPropagation()"></video>
+</div>
 
 <div id="cur"></div>
 <div id="cur-r"></div>
@@ -373,7 +393,7 @@ function getBlocks(i){
     const sc=p.status==='production'?'stprod':p.status==='beta'?'stbeta':'';
     const sy=p.status==='production'?'●':'◐';
     const sl=p.status==='production'?'Production':p.status==='beta'?'Beta':(p.status||'');
-    const vid=p.media_url?`<video autoplay loop muted playsinline style="width:100%;height:110px;border-radius:2px;margin:.38rem 0;object-fit:cover;display:block"><source src="${p.media_url}"></video>`:'';
+    const vid=p.media_url?`<div class="prj-media" onclick="window.openLbx('${p.media_url}')"><video autoplay loop muted playsinline><source src="${p.media_url}"></video><div class="prj-media-hint"><span>Ver completo</span></div></div>`:'';
 
     return `<div class="prj ani"><div class="prj-ico">${p.emoji||'🤖'}</div><div><div class="prj-n">${p.title}</div><div class="prj-d">${p.description||''}</div>${vid}<div class="prj-s ${sc}">${sy} ${sl}</div><div class="tags" style="margin-top:.38rem">${tags}</div></div></div>`;
   });
@@ -839,6 +859,20 @@ window.saveAbout=async function(){
   document.getElementById('ab-ok').style.display='block';
   setTimeout(()=>document.getElementById('ab-ok').style.display='none',2000);
 };
+
+// ── LIGHTBOX ──
+const lbxEl=document.getElementById('lbx'),lbxVid=document.getElementById('lbx-vid');
+window.openLbx=function(src){
+  lbxVid.src=src;
+  lbxEl.classList.add('open');
+  lbxVid.play().catch(()=>{});
+};
+window.closeLbx=function(e){
+  if(e&&e.target===lbxVid)return; // click en el video no cierra
+  lbxEl.classList.remove('open');
+  lbxVid.pause();lbxVid.src='';
+};
+window.addEventListener('keydown',e=>{if(e.key==='Escape'&&lbxEl.classList.contains('open'))window.closeLbx();});
 
 const KO=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];let ki=0;
 window.addEventListener('keydown',e=>{ki=e.key===KO[ki]?ki+1:(e.key===KO[0]?1:0);if(ki===KO.length){ki=0;document.getElementById('lib').style.filter='hue-rotate(180deg) saturate(1.8)';setTimeout(()=>document.getElementById('lib').style.filter='',4000);}});
