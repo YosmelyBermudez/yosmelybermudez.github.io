@@ -103,12 +103,24 @@
     footer { padding: 2rem; border-top: 1px solid var(--border); text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--text-muted); letter-spacing: 0.1em; }
     .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
     .reveal.visible { opacity: 1; transform: translateY(0); }
-  </style>
+  
+    /* ===== ABOUT SECTION ===== */
+    .about-section { background: linear-gradient(180deg, var(--bg-base) 0%, #0a0d13 50%, var(--bg-base) 100%); position: relative; overflow: hidden; }
+    .about-section::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(26,159,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(26,159,255,0.02) 1px, transparent 1px); background-size: 80px 80px; pointer-events: none; }
+    .about-container { max-width: 860px; margin: 0 auto; position: relative; z-index: 1; }
+    .about-text { font-size: 1.05rem; line-height: 1.85; color: var(--text-secondary); margin-bottom: 2.5rem; padding-left: 1.5rem; border-left: 2px solid transparent; transition: border-color 0.3s ease; }
+    .about-text:hover { border-left-color: rgba(26,159,255,0.3); }
+    .about-text.highlight-first { font-size: 1.15rem; color: var(--text-primary); border-left-color: var(--neon-blue); padding-left: 1.5rem; font-weight: 400; }
+    .about-text.highlight-first::first-letter { font-size: 1.4em; font-weight: 700; color: var(--neon-cyan); }
+    .about-text strong { color: var(--text-primary); font-weight: 600; background: linear-gradient(135deg, rgba(26,159,255,0.1), rgba(124,58,237,0.1)); padding: 0.1em 0.3em; border-radius: 4px; }
+    .about-text.passive-text { color: var(--text-muted); font-size: 0.95rem; font-style: italic; }
+    .about-text.passive-text:hover { border-left-color: rgba(34,211,238,0.3); }</style>
 </head>
 <body>
   <nav>
     <a href="#hero" class="nav-logo">&lt;yb.dev /&gt;</a>
     <ul class="nav-links">
+      <li><a href="#about">About</a></li>
       <li><a href="#skills">Stack</a></li>
       <li><a href="#projects">Systems</a></li>
       <li><a href="#contact">Contact</a></li>
@@ -129,6 +141,30 @@
         <a href="#projects" class="btn-primary">&#9658; View Production Systems</a>
         <a href="https://www.linkedin.com/in/yosmely-bermudez/" target="_blank" rel="noopener noreferrer" class="btn-ghost">LinkedIn</a>
         <a href="https://github.com/YosmelyBermudez" target="_blank" rel="noopener noreferrer" class="btn-ghost">GitHub</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="about" class="about-section">
+    <div class="container">
+      <div class="reveal">
+        <p class="section-label">Origin Protocol</p>
+        <h2 class="section-title">About <span class="gradient-text">the Engineer</span></h2>
+        <div class="section-divider"></div>
+      </div>
+      <div class="about-container">
+        <!-- Block 1: Origin and Core Philosophy -->
+        <p class="about-text highlight-first reveal">
+          My journey into Intelligent Systems didn't start in a standard software lab; it began subsurface. As a student engineer, I built neural network algorithms to extract weak predictive signals—predicting water, gas, and hydrocarbons—out of chaotic, noise-heavy seismic and well-log datasets. That was the exact moment I realized the profound power of neural networks: the ability to engineer absolute clarity out of natural disorder.
+        </p>
+        <!-- Block 2: Business Superpower and Technical Rigor -->
+        <p class="about-text reveal">
+          Today, I translate that exact geophysical rigor into enterprise operations. My engineering philosophy is straightforward but never simple: <strong>I deeply map the business context first, then architect the data foundations to scale.</strong> I design robust, cost-effective agentic workflows and automated pipelines, knowing precisely where to optimize computational overhead and where to strategically position human-in-the-loop validation. In corporate ecosystems, unstructured data is just another chaotic signal buried in operational noise—and I build the systems that make it viable.
+        </p>
+        <!-- Block 3: The Human Touch -->
+        <p class="about-text passive-text reveal">
+          To balance the rigidity of production code, I cultivate mental elasticity through constant reading—interpreting data, environments, and human contexts across multiple languages—and physical movement. I view the dimension of time as infinite, offering boundless contexts to reframe complex technical problems. Like a minimalist explorer navigating dark space, I thrive where structured logic meets the fluid boundaries of next-generation artificial intelligence.
+        </p>
       </div>
     </div>
   </section>
