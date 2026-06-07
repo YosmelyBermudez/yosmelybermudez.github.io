@@ -114,7 +114,17 @@
     .about-text.highlight-first::first-letter { font-size: 1.4em; font-weight: 700; color: var(--neon-cyan); }
     .about-text strong { color: var(--text-primary); font-weight: 600; background: linear-gradient(135deg, rgba(26,159,255,0.1), rgba(124,58,237,0.1)); padding: 0.1em 0.3em; border-radius: 4px; }
     .about-text.passive-text { color: var(--text-muted); font-size: 0.95rem; font-style: italic; }
-    .about-text.passive-text:hover { border-left-color: rgba(34,211,238,0.3); }</style>
+    .about-text.passive-text:hover { border-left-color: rgba(34,211,238,0.3); }
+    .about-layout { display: flex; gap: 3rem; align-items: flex-start; }
+    .about-photo-col { flex: 0 0 auto; }
+    .about-photo-frame { position: relative; width: 240px; }
+    .about-photo-frame img { width: 240px; height: 300px; object-fit: cover; object-position: center top; border-radius: 12px; filter: grayscale(15%) contrast(1.05); border: 1px solid rgba(26,159,255,0.25); display: block; }
+    .about-photo-frame::before { content: 'OPERATOR: YOSMELY BERMUDEZ'; position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(0deg, rgba(15,17,23,0.95) 0%, rgba(15,17,23,0.7) 60%, transparent 100%); color: var(--neon-cyan); font-family: 'JetBrains Mono', monospace; font-size: 0.55rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 1.5rem 0.75rem 0.6rem; border-radius: 0 0 12px 12px; z-index: 2; }
+    .about-photo-frame::after { content: ''; position: absolute; inset: 0; border-radius: 12px; background: linear-gradient(135deg, rgba(26,159,255,0.06) 0%, rgba(124,58,237,0.06) 100%); pointer-events: none; z-index: 1; }
+    .about-scan-lines { position: absolute; inset: 0; border-radius: 12px; background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px); pointer-events: none; z-index: 3; }
+    .about-text-col { flex: 1; min-width: 0; }
+    @media (max-width: 768px) { .about-layout { flex-direction: column; align-items: center; } .about-photo-frame { width: 200px; } .about-photo-frame img { width: 200px; height: 250px; } }
+    </style>
 </head>
 <body>
   <nav>
@@ -153,18 +163,28 @@
         <div class="section-divider"></div>
       </div>
       <div class="about-container">
+        <div class="about-layout">
+          <div class="about-photo-col">
+            <div class="about-photo-frame">
+              <img src="./profile-yosmely.jpg" alt="Yosmely Bermudez - AI &amp; ML Engineer" loading="lazy" />
+              <div class="about-scan-lines"></div>
+            </div>
+          </div>
+          <div class="about-text-col">
         <!-- Block 1: Origin and Core Philosophy -->
         <p class="about-text highlight-first reveal">
-          My journey into Intelligent Systems didn't start in a standard software lab; it began subsurface. As a student engineer, I built neural network algorithms to extract weak predictive signals—predicting water, gas, and hydrocarbons—out of chaotic, noise-heavy seismic and well-log datasets. That was the exact moment I realized the profound power of neural networks: the ability to engineer absolute clarity out of natural disorder.
+          My journey into Intelligent Systems didn't start in a standard software lab; it began subsurface. As a student engineer, I built neural network algorithms to extract weak predictive signalsâpredicting water, gas, and hydrocarbonsâout of chaotic, noise-heavy seismic and well-log datasets. That was the exact moment I realized the profound power of neural networks: the ability to engineer absolute clarity out of natural disorder.
         </p>
         <!-- Block 2: Business Superpower and Technical Rigor -->
         <p class="about-text reveal">
-          Today, I translate that exact geophysical rigor into enterprise operations. My engineering philosophy is straightforward but never simple: <strong>I deeply map the business context first, then architect the data foundations to scale.</strong> I design robust, cost-effective agentic workflows and automated pipelines, knowing precisely where to optimize computational overhead and where to strategically position human-in-the-loop validation. In corporate ecosystems, unstructured data is just another chaotic signal buried in operational noise—and I build the systems that make it viable.
+          Today, I translate that exact geophysical rigor into enterprise operations. My engineering philosophy is straightforward but never simple: <strong>I deeply map the business context first, then architect the data foundations to scale.</strong> I design robust, cost-effective agentic workflows and automated pipelines, knowing precisely where to optimize computational overhead and where to strategically position human-in-the-loop validation. In corporate ecosystems, unstructured data is just another chaotic signal buried in operational noiseâand I build the systems that make it viable.
         </p>
         <!-- Block 3: The Human Touch -->
         <p class="about-text passive-text reveal">
-          To balance the rigidity of production code, I cultivate mental elasticity through constant reading—interpreting data, environments, and human contexts across multiple languages—and physical movement. I view the dimension of time as infinite, offering boundless contexts to reframe complex technical problems. Like a minimalist explorer navigating dark space, I thrive where structured logic meets the fluid boundaries of next-generation artificial intelligence.
+          To balance the rigidity of production code, I cultivate mental elasticity through constant readingâinterpreting data, environments, and human contexts across multiple languagesâand physical movement. I view the dimension of time as infinite, offering boundless contexts to reframe complex technical problems. Like a minimalist explorer navigating dark space, I thrive where structured logic meets the fluid boundaries of next-generation artificial intelligence.
         </p>
+          </div>
+        </div>
       </div>
     </div>
   </section>
